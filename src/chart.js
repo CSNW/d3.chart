@@ -5,6 +5,15 @@
 	var d3 = window.d3;
 	var hasOwnProp = Object.hasOwnProperty;
 
+	var createError = function(message) {
+		var ECtor = function() {};
+		ECtor.prototype = new Error(message);
+		return ECtor;
+	};
+	var errors = {
+		UnsafeData: createError("Unsafe data attribute access")
+	};
+
 	var Surrogate = function(ctor) { this.constructor = ctor; };
 	var variadicNew = function(Ctor, args) {
 		var inst;
@@ -99,11 +108,31 @@
 		return chart;
 	};
 
+	var wrapData = function(dataPoint) {
+		var dataAttrs = this.dataAttrs;
+		var getters = this.getters;
+
+		return function(attr) {
+			if (arguments.length) {
+				if (dataAttrs && ~dataAttrs.indexOf(attr)) {
+					return dataPoint[attr];
+				} else {
+					throw new errors.UnsafeData();
+				}
+			}
+			return dataPoint;
+		};
+	};
+
 	Chart.prototype.draw = function(data) {
 
-		var layerName, idx, len;
+		var layerName, idx, len, wrappedData;
 
-		data = this.transform(data);
+		if (data) {
+			wrappedData = data.map(wrapData.bind(this));
+			wrappedData.raw = data;
+		}
+		data = this.transform(wrappedData);
 
 		for (layerName in this._layers) {
 			this._layers[layerName].draw(data);
@@ -232,6 +261,9 @@
 
 		return Chart.extend.apply(Chart, arguments);
 	};
+
+	// Expose error constructors
+	d3.chart.errors = errors;
 
 	d3.selection.prototype.chart = function(chartName) {
 		// Without an argument, attempt to resolve the current selection's
