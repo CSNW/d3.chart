@@ -63,6 +63,7 @@
 		this._layers = {};
 		this._mixins = [];
 		this._events = {};
+		this._getters = {};
 
 		initCascade.call(this, this, Array.prototype.slice.call(arguments, 1));
 	};
@@ -94,6 +95,10 @@
 
 	Chart.prototype.initialize = function() {};
 
+	Chart.prototype.defineGetter = function(attr, getterFn) {
+		this._getters[attr] = getterFn;
+	};
+
 	Chart.prototype.transform = function(data) {
 		return data;
 	};
@@ -110,17 +115,17 @@
 
 	var wrapData = function(dataPoint) {
 		var dataAttrs = this.dataAttrs;
-		var getters = this.getters;
+		var getters = this._getters;
 
 		return function(attr) {
-			if (arguments.length) {
-				if (dataAttrs && ~dataAttrs.indexOf(attr)) {
-					return dataPoint[attr];
-				} else {
-					throw new errors.UnsafeData();
-				}
+			var getter;
+
+			if (dataAttrs && ~dataAttrs.indexOf(attr)) {
+				getter = getters[attr];
+				return getter ? getter.call(dataPoint, attr) : dataPoint[attr];
+			} else {
+				throw new errors.UnsafeData();
 			}
-			return dataPoint;
 		};
 	};
 
