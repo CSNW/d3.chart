@@ -70,11 +70,7 @@
 		var dataProxy = this._dataProxy = {};
 		var vrtlAttrs = this.dataAttrs;
 		var dataAttrs = chartOptions && chartOptions.dataAttrs;
-		if (dataAttrs) {
-			Object.keys(dataAttrs).forEach(function(attr) {
-				getters[attr] = makeGetter(dataAttrs[attr]);
-			});
-		}
+
 		if (vrtlAttrs) {
 			vrtlAttrs.forEach(function(vrtlAttr) {
 				Object.defineProperty(dataProxy, vrtlAttr, {
@@ -89,22 +85,13 @@
 					}
 				});
 			});
-		}
-
-	};
-
-	function makeGetter(attr) {
-		if (typeof attr === 'function') {
-			return attr;
-		}
-		var attrs = attr.split(".");
-		return function() {
-			var val = this;
-			while (val = val[attrs.shift()]) {
-				if (!attrs.length) break;
+			if (dataAttrs) {
+				Object.keys(dataAttrs).forEach(function(attr) {
+					getters[attr] = dataAttrs[attr];
+				});
 			}
-			return val;
-		};
+		}
+
 	};
 
 	Chart.prototype.unlayer = function(name) {
