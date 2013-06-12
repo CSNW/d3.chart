@@ -5,15 +5,6 @@
 	var d3 = window.d3;
 	var hasOwnProp = Object.hasOwnProperty;
 
-	var createError = function(message) {
-		var ECtor = function() {};
-		ECtor.prototype = new Error(message);
-		return ECtor;
-	};
-	var errors = {
-		UnsafeData: createError("Unsafe data attribute access")
-	};
-
 	var Surrogate = function(ctor) { this.constructor = ctor; };
 	var variadicNew = function(Ctor, args) {
 		var inst;
@@ -292,9 +283,6 @@
 
 		return Chart.extend.apply(Chart, arguments);
 	};
-
-	// Expose error constructors
-	d3.chart.errors = errors;
 
 	d3.selection.prototype.chart = function(chartName) {
 		// Without an argument, attempt to resolve the current selection's
