@@ -208,7 +208,7 @@
 		var layerName, idx, len, wrappedData;
 
 		if (this._dataMapping !== false && data) {
-			wrappedData = data.map(wrapData.bind(this));
+			wrappedData = data.map(wrapData, this);
 			data = wrappedData;
 		}
 
