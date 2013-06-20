@@ -107,17 +107,28 @@
 
 	var Chart = function(selection, chartOptions) {
 
-		var getters, dataMapping, dataProxy;
-
 		this.base = selection;
-		this._dataMapping = dataMapping =
-			chartOptions && chartOptions.dataMapping;
-		this._dataProxy = dataProxy = {};
+		this._dataMapping = chartOptions && chartOptions.dataMapping;
 		this._layers = {};
 		this._mixins = [];
 		this._events = {};
 
 		initCascade.call(this, this, Array.prototype.slice.call(arguments, 1));
+
+		// Skip data mapping initialization logic if the chart has explicitly
+		// opted out of that functionality (generally for performance reasons)
+		if (this._dataMapping !== false) {
+			createDataProxy.call(this);
+		}
+
+	};
+
+	// createDataProxy
+	// Initialize a proxy object to facilitate data mapping
+	var createDataProxy = function() {
+		var dataProxy = this._dataProxy = {};
+		var dataMapping = this._dataMapping;
+		var getters;
 
 		if (dataMapping) {
 			getters = {};
@@ -196,10 +207,11 @@
 
 		var layerName, idx, len, wrappedData;
 
-		if (data) {
+		if (this._dataMapping !== false && data) {
 			wrappedData = data.map(wrapData.bind(this));
 			data = wrappedData;
 		}
+
 		data = this.transform(data);
 
 		for (layerName in this._layers) {

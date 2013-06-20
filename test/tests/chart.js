@@ -189,6 +189,18 @@ suite("d3.chart", function() {
 					chart.draw([{ attr1: 1, attr2: 2, attr3: 3, attr4: 4 }]);
 				});
 
+				test("opting out with `dataMapping: false`", function(done) {
+					var chart = d3.select("#test").chart("DataAttrTestChart", {
+						dataMapping: false
+					});
+
+					chart.transform = function(data) {
+						assert.ok(data[0].attr4);
+						done();
+					};
+
+					chart.draw([{ attr4: true }]);
+				});
 
 			});
 
